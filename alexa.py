@@ -27,14 +27,9 @@ def get_headlines():
     return titles
 
 
-@app.route('/')
-def homepage():
-    return "Hi there, how are you?"
-
-
 @ask.launch
 def start_skill():
-    welcome_message = "Hello there, would you like the news?"
+    welcome_message = "Hello there, would you like the world news?"
     return question(welcome_message)
 
 
