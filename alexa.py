@@ -5,6 +5,7 @@ import json
 import requests
 import time
 import unidecode
+import logging
 
 
 app = Flask(__name__)
@@ -12,7 +13,7 @@ ask = Ask(app, "/reddit_reader")
 
 
 def get_headlines(subreddit = 'worldnews'):
-    print(subreddit)
+    logging.info("Searching for subreddit %s" % subreddit)
     user_pass_dict = {'user': 'username',
                       'passwd': 'password!',
                       'api_type': 'json'}
@@ -23,9 +24,12 @@ def get_headlines(subreddit = 'worldnews'):
     url = 'https://www.reddit.com//r/%s/.json?limit=10' % subreddit
     html = sess.get(url)
     data = json.loads(html.content.decode('utf-8'))
-    titles = [unidecode.unidecode(listing['data']['title']) for listing in data['data']['children']]
-    titles = '... '.join([i for i in titles])
-    return titles
+    if 'data' in data:
+        titles = [unidecode.unidecode(listing['data']['title']) for listing in data['data']['children']]
+        titles = '... '.join([i for i in titles])
+        return "The current %s headlines are {}".format(titles) % subreddit
+    else:
+        return "I was unable to find the %s subreddit" % subreddit
 
 
 @ask.launch
@@ -36,9 +40,7 @@ def start_skill():
 
 @ask.intent("CustomRedditIntent", mapping={'subreddit':'subreddit'})
 def get_subreddit_headlines(subreddit):
-    headlines = get_headlines(subreddit.replace(" ", ""))
-    headline_msg = "The current %s headlines are {}".format(headlines) % subreddit
-    return statement(headline_msg)
+    return statement(get_headlines(subreddit.replace(" ", "")))
 
 
 @ask.intent("YesIntent")
