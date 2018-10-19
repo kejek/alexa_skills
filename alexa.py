@@ -11,7 +11,8 @@ app = Flask(__name__)
 ask = Ask(app, "/reddit_reader")
 
 
-def get_headlines():
+def get_headlines(subreddit = 'worldnews'):
+    print(subreddit)
     user_pass_dict = {'user': 'username',
                       'passwd': 'password!',
                       'api_type': 'json'}
@@ -19,7 +20,7 @@ def get_headlines():
     sess.headers.update({'User-Agent': 'I am testing Alexa: MJG'})
     sess.post('https://www.reddit.com/api/login', data=user_pass_dict)
     time.sleep(1)
-    url = 'https://www.reddit.com//r/worldnews/.json?limit=10'
+    url = 'https://www.reddit.com//r/%s/.json?limit=10' % subreddit
     html = sess.get(url)
     data = json.loads(html.content.decode('utf-8'))
     titles = [unidecode.unidecode(listing['data']['title']) for listing in data['data']['children']]
@@ -31,6 +32,13 @@ def get_headlines():
 def start_skill():
     welcome_message = "Hello there, would you like the world news?"
     return question(welcome_message)
+
+
+@ask.intent("CustomRedditIntent", mapping={'subreddit':'subreddit'})
+def get_subreddit_headlines(subreddit):
+    headlines = get_headlines(subreddit.replace(" ", ""))
+    headline_msg = "The current %s headlines are {}".format(headlines) % subreddit
+    return statement(headline_msg)
 
 
 @ask.intent("YesIntent")
