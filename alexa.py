@@ -24,7 +24,7 @@ def get_headlines(subreddit = 'worldnews'):
     url = 'https://www.reddit.com//r/%s/.json?limit=10' % subreddit
     html = sess.get(url)
     data = json.loads(html.content.decode('utf-8'))
-    if 'data' in data:
+    if data['data']['children']:
         titles = [unidecode.unidecode(listing['data']['title']) for listing in data['data']['children']]
         titles = '... '.join([i for i in titles])
         return "The current %s headlines are {}".format(titles) % subreddit
